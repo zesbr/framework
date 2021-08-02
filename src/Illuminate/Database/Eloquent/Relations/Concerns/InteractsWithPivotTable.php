@@ -617,7 +617,21 @@ trait InteractsWithPivotTable
      */
     protected function parseId($value)
     {
-        return $value instanceof Model ? $value->{$this->relatedKey} : $value;
+        if ($value instanceof Model) {
+            return $value->{$this->relatedKey};
+        }
+
+        if ($value instanceof BaseCollection) {
+            return $value->map(function ($v) {
+                return $this->parseId($v);
+            });
+        }
+
+        if (is_array($value)) {
+            return $this->castKeys($value);
+        }
+
+        return $this->castKey($value);
     }
 
     /**
